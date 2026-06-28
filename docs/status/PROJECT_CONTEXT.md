@@ -26,6 +26,7 @@ Implemented:
 - default AI task protocol in `AGENTS.md`
 - issue-style task feedback in final responses
 - branch-first workflow for future implementation work
+- GitHub Issue creation fallback rules for unauthenticated environments
 
 ## Current Architecture Rule
 

@@ -39,3 +39,33 @@ Human controls:
 - push
 - PR creation
 - merge
+
+## Issue creation fallback
+
+Codex can create GitHub Issues only when an authenticated GitHub path is available:
+
+- `gh` CLI is installed and authenticated
+- `GITHUB_TOKEN` or `GH_TOKEN` is available
+- a GitHub connector/tool is configured
+
+If none are available, Codex must not say that the issue was created.
+
+Instead, Codex should return a ready-to-paste issue draft:
+
+```md
+Title:
+
+## Problem
+
+## Impact
+
+## Current Understanding
+
+## Proposed Fix
+
+## Acceptance Criteria
+
+## Notes
+```
+
+This keeps remote work explicit while still preserving the operational context in a form that can be copied into GitHub.
