@@ -13,6 +13,7 @@ import {
   type HistoryState,
 } from "../src/domain/history/index.ts";
 import { learningStates, type LearningState } from "../src/domain/learning/types.ts";
+import { decodeGraphFromHash, encodeGraphToHash } from "../src/state/urlState.ts";
 
 const initialGraph: ConceptGraph = {
   rootId: "root",
@@ -51,16 +52,21 @@ export function GraphEditor() {
   const [hasLoadedStorage, setHasLoadedStorage] = useState(false);
   const [selectedId, setSelectedId] = useState(initialGraph.rootId);
   const [childTitle, setChildTitle] = useState("");
+  const [shareStatus, setShareStatus] = useState("idle");
   const validation = validateConceptGraph(history.graph);
   const selectedNode = history.graph.nodes[selectedId] ?? history.graph.nodes[history.graph.rootId];
   const nodes = useMemo(() => flattenGraph(history.graph), [history.graph]);
 
   useEffect(() => {
+    const urlGraph = loadGraphFromUrl();
     const storedGraph = loadStoredGraph();
-    if (storedGraph) {
-      setHistory(createHistoryState(storedGraph));
-      setSelectedId(storedGraph.rootId);
+    const graph = urlGraph ?? storedGraph;
+
+    if (graph) {
+      setHistory(createHistoryState(graph));
+      setSelectedId(graph.rootId);
     }
+
     setHasLoadedStorage(true);
   }, []);
 
@@ -144,9 +150,24 @@ export function GraphEditor() {
 
   function resetGraph(): void {
     localStorage.removeItem(storageKey);
+    window.history.replaceState(null, "", window.location.pathname);
     setHistory(createHistoryState(initialGraph));
     setSelectedId(initialGraph.rootId);
     setChildTitle("");
+    setShareStatus("reset");
+  }
+
+  async function shareGraph(): Promise<void> {
+    const hash = encodeGraphToHash(history.graph);
+    const shareUrl = `${window.location.origin}${window.location.pathname}${hash}`;
+    window.history.replaceState(null, "", hash);
+
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setShareStatus("copied");
+    } catch {
+      setShareStatus("url ready");
+    }
   }
 
   return (
@@ -163,7 +184,7 @@ export function GraphEditor() {
       <section className="statusGrid" aria-label="도메인 상태">
         <Status label="Graph validation" value={validation.valid ? "valid" : "invalid"} />
         <Status label="Undo stack" value={`${history.undoStack.length}`} />
-        <Status label="Local storage" value={hasLoadedStorage ? "synced" : "loading"} />
+        <Status label="Share URL" value={shareStatus} />
       </section>
 
       <section className="toolbar" aria-label="편집 도구">
@@ -175,6 +196,9 @@ export function GraphEditor() {
         </button>
         <button onClick={resetGraph} type="button">
           Reset
+        </button>
+        <button onClick={() => void shareGraph()} type="button">
+          Share URL
         </button>
       </section>
 
@@ -331,4 +355,9 @@ function loadStoredGraph(): ConceptGraph | undefined {
   } catch {
     return undefined;
   }
+}
+
+function loadGraphFromUrl(): ConceptGraph | undefined {
+  const result = decodeGraphFromHash(window.location.hash);
+  return result.ok ? result.graph : undefined;
 }

@@ -17,6 +17,7 @@ Progress:
 - minimal Next.js app: done
 - local ConceptGraph editor: done
 - localStorage persistence: done
+- URL serialization: done
 - design direction: documented
 - unit tests: done for current domain rules
 
@@ -30,4 +31,4 @@ Progress:
 
 ## Next Safe Task
 
-Add URL serialization for sharing the local ConceptGraph state.
+Add explanation quality fields and weak-node visual states.
