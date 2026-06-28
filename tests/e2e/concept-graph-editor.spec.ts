@@ -71,6 +71,51 @@ test("shared URL hash restores the edited concept graph", async ({ page }) => {
   );
 });
 
+test("imports and exports nested learning tree JSON", async ({ page }) => {
+  await page.goto("/");
+
+  const treeJson = {
+    title: "HTTP 캐싱",
+    body: "응답을 재사용해 네트워크 비용을 줄인다.",
+    children: [
+      {
+        title: "Cache-Control",
+        body: "캐시 정책을 선언하는 헤더다.",
+      },
+    ],
+  };
+
+  await page
+    .getByRole("textbox", { name: "JSON 가져오기" })
+    .fill(JSON.stringify(treeJson, null, 2));
+  await page.getByRole("button", { name: "JSON 가져오기" }).click();
+
+  await expect(page.getByText("가져오기 완료")).toBeVisible();
+  await expect(page.getByLabel("제목")).toHaveValue("HTTP 캐싱");
+  await expect(page.getByLabel("내 설명")).toHaveValue(
+    "응답을 재사용해 네트워크 비용을 줄인다.",
+  );
+  await expect(page.getByRole("button", { name: /Cache-Control/ })).toBeVisible();
+
+  const exportedTree = JSON.parse(
+    await page.getByRole("textbox", { name: "JSON 내보내기" }).inputValue(),
+  ) as {
+    children: Array<{ body?: string; title: string }>;
+    title: string;
+  };
+
+  expect(exportedTree.title).toBe("HTTP 캐싱");
+  expect(exportedTree.children[0]).toMatchObject({
+    body: "캐시 정책을 선언하는 헤더다.",
+    title: "Cache-Control",
+  });
+
+  await page.reload();
+
+  await expect(page.getByRole("button", { name: /HTTP 캐싱/ })).toBeVisible();
+  await expect(page.getByLabel("제목")).toHaveValue("HTTP 캐싱");
+});
+
 test("reset clears shared URL state and returns to the default graph", async ({ page }) => {
   await page.goto("/");
 
@@ -103,4 +148,42 @@ test("reset clears shared URL state and returns to the default graph", async ({ 
       page.evaluate(() => localStorage.getItem("feynman-learning-os:concept-graph")),
     )
     .not.toContain("초기화 대상");
+});
+
+test("weak-node review moves a strengthened concept out of the review queue", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  await page.waitForFunction(() => localStorage.getItem("feynman-learning-os:concept-graph"));
+
+  const reviewQueue = page.getByLabel("약한 노드 리뷰");
+  await expect(reviewQueue.getByRole("heading", { name: "약한 노드 3개" })).toBeVisible();
+
+  await page.getByRole("button", { name: "다음 약점" }).click();
+  await expect(page.getByLabel("제목")).toHaveValue("내 말로 설명하기");
+
+  await page.getByLabel("내 설명").fill("새 개념을 책 없이 내 언어로 다시 설명한다.");
+  await page.getByLabel("명확성").fill("0.9");
+  await page.getByLabel("정확성").fill("0.9");
+  await page.getByLabel("단순성").fill("0.9");
+  await page.getByLabel("자신감").fill("0.9");
+
+  await expect(page.getByLabel("이해도 점수").getByText("안정")).toBeVisible();
+
+  await page.getByRole("button", { name: "복습 완료로 표시" }).click();
+  await expect(page.getByRole("button", { name: "복습 완료로 표시" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: /내 말로 설명하기/ })).toContainText(
+    "복습 완료",
+  );
+  await expect(reviewQueue.getByRole("heading", { name: "약한 노드 2개" })).toBeVisible();
+
+  await page.getByRole("button", { name: "다음 약점" }).click();
+  await expect(page.getByLabel("제목")).toHaveValue("파인만 러닝 OS");
+
+  await page.getByRole("button", { name: "다음 약점" }).click();
+  await expect(page.getByLabel("제목")).toHaveValue("약한 지점 복습하기");
+
+  await page.getByRole("button", { name: "약한 노드만" }).click();
+  await expect(page.getByRole("button", { name: /내 말로 설명하기/ })).toHaveCount(0);
 });

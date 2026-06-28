@@ -201,6 +201,59 @@ button:disabled {
   line-height: 1.45;
 }
 
+.treeJsonPanel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+  margin-bottom: 24px;
+  padding: 20px;
+  border: 1px solid var(--ink);
+  border-radius: 24px;
+  background: var(--surface-soft);
+}
+
+.treeJsonPanel label {
+  min-width: 0;
+}
+
+.treeJsonColumn {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.treeJsonPanel textarea {
+  min-height: 180px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.treeJsonActions {
+  display: flex;
+  min-height: 40px;
+  align-items: center;
+  gap: 12px;
+}
+
+.treeJsonActions button {
+  min-width: 124px;
+  padding: 0 16px;
+}
+
+.treeJsonActions span,
+.errorText {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.errorText {
+  color: var(--accent-magenta);
+  font-weight: 700;
+}
+
 .editorShell {
   display: grid;
   grid-template-columns: minmax(240px, 0.8fr) minmax(320px, 1.2fr);
@@ -422,6 +475,7 @@ input[type="range"] {
   .statusGrid,
   .editorShell,
   .reviewStrip,
+  .treeJsonPanel,
   .addChild {
     grid-template-columns: 1fr;
   }

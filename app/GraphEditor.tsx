@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 
 import type { ConceptGraph, ConceptNode } from "../src/domain/conceptGraph/index.ts";
 import { validateConceptGraph } from "../src/domain/conceptGraph/index.ts";
@@ -19,6 +19,11 @@ import {
   type LearningScore,
   type LearningState,
 } from "../src/domain/learning/index.ts";
+import {
+  exportLearningTree,
+  importLearningTree,
+  type ImportLearningTreeError,
+} from "../src/domain/importExport/index.ts";
 import { decodeGraphFromHash, encodeGraphToHash } from "../src/state/urlState.ts";
 
 const initialGraph: ConceptGraph = {
@@ -59,10 +64,18 @@ export function GraphEditor() {
   const [selectedId, setSelectedId] = useState(initialGraph.rootId);
   const [childTitle, setChildTitle] = useState("");
   const [shareStatus, setShareStatus] = useState("idle");
+  const [treeJsonInput, setTreeJsonInput] = useState("");
+  const [treeJsonImportStatus, setTreeJsonImportStatus] = useState("idle");
+  const [treeJsonExportStatus, setTreeJsonExportStatus] = useState("idle");
+  const [treeJsonError, setTreeJsonError] = useState("");
   const [showWeakOnly, setShowWeakOnly] = useState(false);
   const validation = validateConceptGraph(history.graph);
   const selectedNode = history.graph.nodes[selectedId] ?? history.graph.nodes[history.graph.rootId];
   const nodes = useMemo(() => flattenGraph(history.graph), [history.graph]);
+  const exportedTreeJson = useMemo(
+    () => JSON.stringify(exportLearningTree(history.graph), null, 2),
+    [history.graph],
+  );
   const weakNodes = nodes.filter(({ node }) => isWeakNode(node));
   const visibleNodes = showWeakOnly ? weakNodes : nodes;
   const weakNodeCount = weakNodes.length;
@@ -193,6 +206,9 @@ export function GraphEditor() {
     setSelectedId(initialGraph.rootId);
     setChildTitle("");
     setShareStatus("reset");
+    setTreeJsonImportStatus("idle");
+    setTreeJsonExportStatus("idle");
+    setTreeJsonError("");
   }
 
   async function shareGraph(): Promise<void> {
@@ -205,6 +221,43 @@ export function GraphEditor() {
       setShareStatus("copied");
     } catch {
       setShareStatus("url ready");
+    }
+  }
+
+  function importTreeJson(): void {
+    setTreeJsonError("");
+
+    let parsedTree: unknown;
+    try {
+      parsedTree = JSON.parse(treeJsonInput);
+    } catch {
+      setTreeJsonImportStatus("error");
+      setTreeJsonError("JSON 문법을 확인해 주세요.");
+      return;
+    }
+
+    const result = importLearningTree(parsedTree);
+    if (!result.ok) {
+      setTreeJsonImportStatus("error");
+      setTreeJsonError(importErrorLabel(result.error));
+      return;
+    }
+
+    window.history.replaceState(null, "", window.location.pathname);
+    setHistory(createHistoryState(result.graph));
+    setSelectedId(result.graph.rootId);
+    setChildTitle("");
+    setShareStatus("idle");
+    setTreeJsonImportStatus("imported");
+    setTreeJsonExportStatus("idle");
+  }
+
+  async function copyExportedTreeJson(): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(exportedTreeJson);
+      setTreeJsonExportStatus("copied");
+    } catch {
+      setTreeJsonExportStatus("ready");
     }
   }
 
@@ -250,6 +303,48 @@ export function GraphEditor() {
         </button>
       </section>
 
+      <section className="treeJsonPanel" aria-label="Learning tree JSON 가져오기와 내보내기">
+        <div className="treeJsonColumn">
+          <label>
+            JSON 가져오기
+            <textarea
+              onChange={(event) => {
+                setTreeJsonInput(event.target.value);
+                setTreeJsonError("");
+                setTreeJsonImportStatus("idle");
+              }}
+              placeholder='{"title":"주제","children":[{"title":"하위 개념"}]}'
+              rows={8}
+              value={treeJsonInput}
+            />
+          </label>
+          <div className="treeJsonActions">
+            <button
+              disabled={treeJsonInput.trim().length === 0}
+              onClick={importTreeJson}
+              type="button"
+            >
+              JSON 가져오기
+            </button>
+            <span aria-live="polite">{treeJsonImportStatusLabel(treeJsonImportStatus)}</span>
+          </div>
+          {treeJsonError ? <p className="errorText">{treeJsonError}</p> : null}
+        </div>
+
+        <div className="treeJsonColumn">
+          <label>
+            JSON 내보내기
+            <textarea readOnly rows={8} value={exportedTreeJson} />
+          </label>
+          <div className="treeJsonActions">
+            <button onClick={() => void copyExportedTreeJson()} type="button">
+              JSON 복사
+            </button>
+            <span aria-live="polite">{treeJsonExportStatusLabel(treeJsonExportStatus)}</span>
+          </div>
+        </div>
+      </section>
+
       <section className="reviewStrip" aria-label="약한 노드 리뷰">
         <div>
           <p className="eyebrow">복습 대기열</p>
@@ -276,7 +371,7 @@ export function GraphEditor() {
                   .join(" ")}
                 key={node.id}
                 onClick={() => setSelectedId(node.id)}
-                style={{ "--depth": depth } as React.CSSProperties}
+                style={{ "--depth": depth } as CSSProperties}
                 type="button"
               >
                 <span>
@@ -516,6 +611,37 @@ function shareStatusLabel(status: string): string {
   };
 
   return labels[status] ?? status;
+}
+
+function treeJsonImportStatusLabel(status: string): string {
+  const labels: Record<string, string> = {
+    error: "가져오기 실패",
+    idle: "대기",
+    imported: "가져오기 완료",
+  };
+
+  return labels[status] ?? status;
+}
+
+function treeJsonExportStatusLabel(status: string): string {
+  const labels: Record<string, string> = {
+    copied: "복사됨",
+    idle: "대기",
+    ready: "복사할 JSON 준비됨",
+  };
+
+  return labels[status] ?? status;
+}
+
+function importErrorLabel(error: ImportLearningTreeError): string {
+  const labels: Record<ImportLearningTreeError, string> = {
+    DUPLICATE_ID: "중복된 id가 있습니다.",
+    EMPTY_TITLE: "비어 있는 title이 있습니다.",
+    INVALID_IMPORTED_TREE: "ConceptGraph로 변환할 수 없는 트리입니다.",
+    INVALID_ROOT: "루트에는 문자열 title이 필요합니다.",
+  };
+
+  return labels[error];
 }
 
 function learningStateLabel(state: LearningState): string {
