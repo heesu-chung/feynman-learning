@@ -17,24 +17,36 @@ Feynman 학습법을 기반으로 어려운 개념을 직접 설명하고, 약�
 현재 Sprint 1은 `ConceptGraph`와 `LearningState` 도메인 기반을 만드는 단계입니다.
 
 구현 완료:
+- Next.js 최소 앱
 - `ConceptGraph` 타입
 - `LearningState` 타입
 - 그래프 검증 로직
+- `TreePatch` 타입과 적용 로직
+- command/history 규칙
 - 도메인 단위 테스트
 
 아직 하지 않음:
-- UI
 - Pixi
 - REST API
 - Notion/Figma 연동
 - AWS
 - OpenAI API
 
+## 실행 방법
+
+```bash
+pnpm dev
+```
+
+브라우저에서 `http://localhost:3000`을 엽니다.
+
 ## 테스트 방법
 
 ```bash
+pnpm typecheck
 pnpm test
 pnpm test:unit
+pnpm build
 ```
 
-현재 `typecheck`, `lint`, `build` 스크립트는 아직 정의되어 있지 않습니다.
+현재 `lint` 스크립트는 아직 정의되어 있지 않습니다.

@@ -12,7 +12,10 @@ Progress:
 - ConceptGraph types: done
 - LearningState types: done
 - validation: done
-- unit tests: done for current validation rules
+- TreePatch: done
+- command/history: done
+- minimal Next.js app: done
+- unit tests: done for current domain rules
 
 ## Integration Status
 
@@ -24,4 +27,4 @@ Progress:
 
 ## Next Safe Task
 
-Define TreePatch types and patch application rules with unit tests.
+Add local ConceptGraph editing UI without Pixi or external integrations.
