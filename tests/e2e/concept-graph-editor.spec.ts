@@ -70,3 +70,37 @@ test("shared URL hash restores the edited concept graph", async ({ page }) => {
     "URL 해시만으로 그래프를 다시 열 수 있어야 한다.",
   );
 });
+
+test("reset clears shared URL state and returns to the default graph", async ({ page }) => {
+  await page.goto("/");
+
+  await page.waitForFunction(() => localStorage.getItem("feynman-learning-os:concept-graph"));
+
+  await page.getByPlaceholder("새 하위 노드").fill("초기화 대상");
+  await page.getByRole("button", { name: "하위 노드 추가" }).click();
+  await expect(page.getByLabel("제목")).toHaveValue("초기화 대상");
+
+  await page.getByLabel("내 설명").fill("초기화 후에는 이 설명이 남아 있으면 안 된다.");
+  await expect(page.getByLabel("내 설명")).toHaveValue(
+    "초기화 후에는 이 설명이 남아 있으면 안 된다.",
+  );
+
+  await page.getByRole("button", { name: "링크 복사" }).click();
+  await expect(page).toHaveURL(/#.+/);
+
+  await page.getByRole("button", { exact: true, name: "초기화" }).click();
+
+  await expect(page).not.toHaveURL(/#.+/);
+  await expect(page.getByRole("button", { name: /파인만 러닝 OS/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /내 말로 설명하기/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /약한 지점 복습하기/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /초기화 대상/ })).toHaveCount(0);
+  await expect(page.getByLabel("제목")).toHaveValue("파인만 러닝 OS");
+  await expect(page.getByLabel("내 설명")).toHaveValue("");
+  await expect(page.getByText("초기화됨")).toBeVisible();
+  await expect
+    .poll(async () =>
+      page.evaluate(() => localStorage.getItem("feynman-learning-os:concept-graph")),
+    )
+    .not.toContain("초기화 대상");
+});
