@@ -11,6 +11,7 @@ Feynman 학습법을 기반으로 어려운 개념을 직접 설명하고, 약�
 | 이해 중심 학습 | 개념을 그래프로 나누고 직접 설명하며 이해도를 확인합니다. |
 | 작은 MVP | 학습 루프가 동작하기 전까지 큰 인프라를 만들지 않습니다. |
 | 실전 학습 | TypeScript, 테스트, REST API, Node.js, GitHub workflow 등을 제품 안에서 배웁니다. |
+| 디자인 방향 | 흑백 중심의 편집 화면 위에 파스텔 블록을 얹는 Figma-inspired 스타일을 따릅니다. |
 
 ## 현재 진행 상황
 
@@ -19,6 +20,8 @@ Feynman 학습법을 기반으로 어려운 개념을 직접 설명하고, 약�
 구현 완료:
 - Next.js 최소 앱
 - 로컬 ConceptGraph 편집기
+- localStorage 저장/복원
+- 디자인 방향 문서화
 - `ConceptGraph` 타입
 - `LearningState` 타입
 - 그래프 검증 로직
@@ -28,6 +31,7 @@ Feynman 학습법을 기반으로 어려운 개념을 직접 설명하고, 약�
 
 아직 하지 않음:
 - Pixi
+- URL 공유
 - REST API
 - Notion/Figma 연동
 - AWS

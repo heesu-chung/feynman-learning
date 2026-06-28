@@ -16,6 +16,8 @@ Progress:
 - command/history: done
 - minimal Next.js app: done
 - local ConceptGraph editor: done
+- localStorage persistence: done
+- design direction: documented
 - unit tests: done for current domain rules
 
 ## Integration Status
@@ -28,4 +30,4 @@ Progress:
 
 ## Next Safe Task
 
-Add localStorage persistence for the local ConceptGraph editor.
+Add URL serialization for sharing the local ConceptGraph state.

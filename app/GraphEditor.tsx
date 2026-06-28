@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import type { ConceptGraph, ConceptNode } from "../src/domain/conceptGraph/index.ts";
 import { validateConceptGraph } from "../src/domain/conceptGraph/index.ts";
@@ -44,13 +44,33 @@ const initialGraph: ConceptGraph = {
   },
 };
 
+const storageKey = "feynman-learning-os:concept-graph";
+
 export function GraphEditor() {
   const [history, setHistory] = useState<HistoryState>(() => createHistoryState(initialGraph));
+  const [hasLoadedStorage, setHasLoadedStorage] = useState(false);
   const [selectedId, setSelectedId] = useState(initialGraph.rootId);
   const [childTitle, setChildTitle] = useState("");
   const validation = validateConceptGraph(history.graph);
   const selectedNode = history.graph.nodes[selectedId] ?? history.graph.nodes[history.graph.rootId];
   const nodes = useMemo(() => flattenGraph(history.graph), [history.graph]);
+
+  useEffect(() => {
+    const storedGraph = loadStoredGraph();
+    if (storedGraph) {
+      setHistory(createHistoryState(storedGraph));
+      setSelectedId(storedGraph.rootId);
+    }
+    setHasLoadedStorage(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hasLoadedStorage) {
+      return;
+    }
+
+    localStorage.setItem(storageKey, JSON.stringify(history.graph));
+  }, [hasLoadedStorage, history.graph]);
 
   function run(command: TreePatchCommand): void {
     const result = executeCommand(history, command);
@@ -122,6 +142,13 @@ export function GraphEditor() {
     }
   }
 
+  function resetGraph(): void {
+    localStorage.removeItem(storageKey);
+    setHistory(createHistoryState(initialGraph));
+    setSelectedId(initialGraph.rootId);
+    setChildTitle("");
+  }
+
   return (
     <main className="page">
       <section className="hero">
@@ -136,7 +163,7 @@ export function GraphEditor() {
       <section className="statusGrid" aria-label="도메인 상태">
         <Status label="Graph validation" value={validation.valid ? "valid" : "invalid"} />
         <Status label="Undo stack" value={`${history.undoStack.length}`} />
-        <Status label="Redo stack" value={`${history.redoStack.length}`} />
+        <Status label="Local storage" value={hasLoadedStorage ? "synced" : "loading"} />
       </section>
 
       <section className="toolbar" aria-label="편집 도구">
@@ -145,6 +172,9 @@ export function GraphEditor() {
         </button>
         <button disabled={history.redoStack.length === 0} onClick={redoLast} type="button">
           Redo
+        </button>
+        <button onClick={resetGraph} type="button">
+          Reset
         </button>
       </section>
 
@@ -286,4 +316,19 @@ function createNodeId(graph: ConceptGraph, title: string): string {
 
 function findParentId(graph: ConceptGraph, nodeId: string): string | undefined {
   return Object.values(graph.nodes).find((node) => node.children.includes(nodeId))?.id;
+}
+
+function loadStoredGraph(): ConceptGraph | undefined {
+  const rawGraph = localStorage.getItem(storageKey);
+  if (!rawGraph) {
+    return undefined;
+  }
+
+  try {
+    const parsedGraph = JSON.parse(rawGraph) as ConceptGraph;
+    const validation = validateConceptGraph(parsedGraph);
+    return validation.valid ? parsedGraph : undefined;
+  } catch {
+    return undefined;
+  }
 }
