@@ -25,6 +25,113 @@ Read only the minimum required documents:
 
 Do not read unrelated documents unless the task requires them.
 
+## Default Task Protocol
+
+When the user provides only a task, automatically follow this protocol:
+
+1. Read `CONSTITUTION.md`, `AGENTS.md`, `status/PROJECT_CONTEXT.md`, and `status/PROJECT_HEALTH.md`.
+2. Read only additional documents directly relevant to the task.
+3. Determine task complexity:
+   - Level 1: small change. Implement directly.
+   - Level 2: feature implementation. Review, implement, validate, review.
+   - Level 3: architecture change. Perform architecture/security/performance review and wait before broad implementation.
+   - Level 4: product-wide change. Review product docs, architecture, decisions, risks, roadmap, then update docs before implementation.
+4. For Level 1-2, proceed without asking unless scope expands, dependency installation is needed, or a destructive action is required.
+5. Before editing, briefly state target files, architecture impact, and test plan.
+6. Implement only the requested task.
+7. Run:
+   - `pnpm typecheck`
+   - `pnpm test`
+   - `pnpm build`
+8. Update only affected README/status/design/docs sections.
+9. Use a task branch for implementation work unless the current branch already represents the task.
+10. If validation passes, commit and push Level 1-2 work to the task branch automatically.
+11. Do not merge to `main` automatically.
+12. For Level 3-4 work, ask before implementation and before push.
+13. Return changed files, validation result, docs updated, risks, prompt feedback, context note, PR-ready summary, and next smallest task.
+
+Validation results must be summarized as a table.
+
+Do not paste long test logs into the final answer unless the user explicitly asks for raw output.
+
+## Prompt Feedback Rule
+
+After each task, include a short assessment of the user's request:
+
+- Level: 1-4
+- Clarity: strong / okay / risky
+- What was good
+- One concrete improvement for the next prompt
+- Missing issue/task fields, if any
+- Token/context impact: low / medium / high
+
+Do not over-teach. Keep this feedback brief and practical.
+
+## Issue / Task Shaping Rule
+
+When the user gives a task, translate it into an issue-style task summary before or after implementation depending on complexity.
+
+For Level 1-2, include the summary in the final answer.
+
+For Level 3-4, show the summary before implementation and wait for approval.
+
+Use this shape:
+
+```md
+Title:
+Goal:
+Scope:
+Out of scope:
+Done when:
+Validation:
+Risk:
+```
+
+If the user prompt is missing acceptance criteria, infer the smallest safe criteria and mention that assumption.
+
+## Branch / PR Workflow Rule
+
+Default workflow:
+
+1. Start from the latest clean local state.
+2. Create a short task branch for implementation work:
+   - `chore/...` for workflow/docs/tooling
+   - `feat/...` for product features
+   - `fix/...` for defects
+3. Commit on that branch.
+4. Push the branch.
+5. Prepare PR title/body.
+6. Do not merge into `main` unless explicitly instructed.
+
+Branch names should be lowercase and scoped, for example:
+
+- `feat/weak-node-review-flow`
+- `chore/task-protocol`
+- `fix/url-state-decode`
+
+If there are already uncommitted changes from the current task, do not switch branches until the user approves or the changes are safely committed/stashed.
+
+## Context Management Rule
+
+Keep `docs/status/PROJECT_CONTEXT.md` as the compact handoff summary.
+
+Update it when:
+- a sprint milestone changes
+- an architecture rule changes
+- a major feature lands
+- the next safe task changes
+
+Use it to avoid rereading unrelated documents.
+
+Long chats do not become shorter just because this file exists.
+
+To actually reduce model context usage, start a new chat and ask the agent to read only:
+
+1. `docs/CONSTITUTION.md`
+2. `docs/AGENTS.md`
+3. `docs/status/PROJECT_CONTEXT.md`
+4. the task-relevant files
+
 ## Package Manager Rule
 
 This project uses pnpm.
@@ -87,12 +194,16 @@ You may prepare:
 - PR body
 
 Do not:
-- commit
-- push
 - create PR
 - merge
 
 unless explicitly approved.
+
+For Level 1-2 tasks, commit and push the task branch automatically after local validation passes.
+
+For Level 3-4 tasks, ask before commit/push.
+
+Never merge a task branch into `main` without explicit approval.
 
 ## Documentation Rule
 
@@ -126,10 +237,13 @@ Do not over-engineer.
 After implementation, return:
 - files changed
 - tests added
-- validation result
+- validation result as a Markdown table
 - docs updated
 - architecture impact
 - risks
+- prompt feedback
+- context note
+- issue/task summary
 - suggested commit message
 - suggested PR title/body
 - next smallest task

@@ -18,6 +18,10 @@ Progress:
 - local ConceptGraph editor: done
 - localStorage persistence: done
 - URL serialization: done
+- explanation quality fields: done
+- weak-node visual states: done
+- default task protocol: documented
+- compact project context: documented
 - design direction: documented
 - unit tests: done for current domain rules
 
@@ -31,4 +35,4 @@ Progress:
 
 ## Next Safe Task
 
-Add explanation quality fields and weak-node visual states.
+Add a simple review flow for weak nodes.

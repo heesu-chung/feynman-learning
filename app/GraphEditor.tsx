@@ -12,7 +12,13 @@ import {
   undo,
   type HistoryState,
 } from "../src/domain/history/index.ts";
-import { learningStates, type LearningState } from "../src/domain/learning/types.ts";
+import {
+  calculateScoreAverage,
+  isWeakNode,
+  learningStates,
+  type LearningScore,
+  type LearningState,
+} from "../src/domain/learning/index.ts";
 import { decodeGraphFromHash, encodeGraphToHash } from "../src/state/urlState.ts";
 
 const initialGraph: ConceptGraph = {
@@ -56,6 +62,8 @@ export function GraphEditor() {
   const validation = validateConceptGraph(history.graph);
   const selectedNode = history.graph.nodes[selectedId] ?? history.graph.nodes[history.graph.rootId];
   const nodes = useMemo(() => flattenGraph(history.graph), [history.graph]);
+  const weakNodeCount = nodes.filter(({ node }) => isWeakNode(node)).length;
+  const selectedAverage = calculateScoreAverage(selectedNode.score);
 
   useEffect(() => {
     const urlGraph = loadGraphFromUrl();
@@ -93,6 +101,19 @@ export function GraphEditor() {
         patch,
       }),
     );
+  }
+
+  function updateSelectedScore(key: keyof LearningScore, value: number): void {
+    updateSelected({
+      score: {
+        clarity: selectedNode.score?.clarity ?? 0,
+        correctness: selectedNode.score?.correctness ?? 0,
+        simplicity: selectedNode.score?.simplicity ?? 0,
+        confidence: selectedNode.score?.confidence ?? 0,
+        retention: selectedNode.score?.retention,
+        [key]: value,
+      },
+    });
   }
 
   function addChild(): void {
@@ -183,7 +204,7 @@ export function GraphEditor() {
 
       <section className="statusGrid" aria-label="도메인 상태">
         <Status label="Graph validation" value={validation.valid ? "valid" : "invalid"} />
-        <Status label="Undo stack" value={`${history.undoStack.length}`} />
+        <Status label="Weak nodes" value={`${weakNodeCount}`} />
         <Status label="Share URL" value={shareStatus} />
       </section>
 
@@ -208,7 +229,13 @@ export function GraphEditor() {
           <div className="nodeList">
             {nodes.map(({ node, depth }) => (
               <button
-                className={node.id === selectedNode.id ? "node selected" : "node"}
+                className={[
+                  "node",
+                  node.id === selectedNode.id ? "selected" : "",
+                  isWeakNode(node) ? "weak" : "strong",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
                 key={node.id}
                 onClick={() => setSelectedId(node.id)}
                 style={{ "--depth": depth } as React.CSSProperties}
@@ -216,7 +243,9 @@ export function GraphEditor() {
               >
                 <span>
                   <strong>{node.title}</strong>
-                  <small>{node.learningState}</small>
+                  <small>
+                    {node.learningState} · {scoreLabel(node)}
+                  </small>
                 </span>
                 <em>{node.children.length}</em>
               </button>
@@ -263,6 +292,39 @@ export function GraphEditor() {
             />
           </label>
 
+          <section className="scorePanel" aria-label="이해도 점수">
+            <div className="scoreHeader">
+              <div>
+                <p className="eyebrow">Understanding score</p>
+                <h3>{selectedAverage === undefined ? "Not scored" : formatScore(selectedAverage)}</h3>
+              </div>
+              <strong className={isWeakNode(selectedNode) ? "weakBadge" : "strongBadge"}>
+                {isWeakNode(selectedNode) ? "weak" : "steady"}
+              </strong>
+            </div>
+
+            <ScoreSlider
+              label="Clarity"
+              onChange={(value) => updateSelectedScore("clarity", value)}
+              value={selectedNode.score?.clarity ?? 0}
+            />
+            <ScoreSlider
+              label="Correctness"
+              onChange={(value) => updateSelectedScore("correctness", value)}
+              value={selectedNode.score?.correctness ?? 0}
+            />
+            <ScoreSlider
+              label="Simplicity"
+              onChange={(value) => updateSelectedScore("simplicity", value)}
+              value={selectedNode.score?.simplicity ?? 0}
+            />
+            <ScoreSlider
+              label="Confidence"
+              onChange={(value) => updateSelectedScore("confidence", value)}
+              value={selectedNode.score?.confidence ?? 0}
+            />
+          </section>
+
           <div className="addChild">
             <input
               onChange={(event) => setChildTitle(event.target.value)}
@@ -299,6 +361,33 @@ function Status({ label, value }: { label: string; value: string }) {
       <span>{label}</span>
       <strong>{value}</strong>
     </article>
+  );
+}
+
+function ScoreSlider({
+  label,
+  onChange,
+  value,
+}: {
+  label: string;
+  onChange: (value: number) => void;
+  value: number;
+}) {
+  return (
+    <label className="scoreSlider">
+      <span>
+        {label}
+        <strong>{formatScore(value)}</strong>
+      </span>
+      <input
+        max="1"
+        min="0"
+        onChange={(event) => onChange(Number(event.target.value))}
+        step="0.05"
+        type="range"
+        value={value}
+      />
+    </label>
   );
 }
 
@@ -340,6 +429,15 @@ function createNodeId(graph: ConceptGraph, title: string): string {
 
 function findParentId(graph: ConceptGraph, nodeId: string): string | undefined {
   return Object.values(graph.nodes).find((node) => node.children.includes(nodeId))?.id;
+}
+
+function scoreLabel(node: ConceptNode): string {
+  const average = calculateScoreAverage(node.score);
+  return average === undefined ? "not scored" : formatScore(average);
+}
+
+function formatScore(value: number): string {
+  return `${Math.round(value * 100)}%`;
 }
 
 function loadStoredGraph(): ConceptGraph | undefined {

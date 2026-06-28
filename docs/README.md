@@ -22,6 +22,8 @@ Feynman 학습법을 기반으로 어려운 개념을 직접 설명하고, 약�
 - 로컬 ConceptGraph 편집기
 - localStorage 저장/복원
 - URL 공유
+- 이해도 점수/약한 노드 표시
+- 자동 Task 프로토콜
 - 디자인 방향 문서화
 - `ConceptGraph` 타입
 - `LearningState` 타입
@@ -32,7 +34,7 @@ Feynman 학습법을 기반으로 어려운 개념을 직접 설명하고, 약�
 
 아직 하지 않음:
 - Pixi
-- 이해도 점수/약한 노드 표시
+- 리뷰 플로우
 - REST API
 - Notion/Figma 연동
 - AWS
