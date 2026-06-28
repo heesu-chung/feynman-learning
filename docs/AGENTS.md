@@ -54,6 +54,8 @@ Validation results must be summarized as a table.
 
 Do not paste long test logs into the final answer unless the user explicitly asks for raw output.
 
+Progress updates and final task summaries should be written in Korean by default.
+
 ## Slash Command Rule
 
 Project slash command definitions live in `.codex/commands/`.
