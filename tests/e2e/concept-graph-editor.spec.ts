@@ -104,3 +104,41 @@ test("reset clears shared URL state and returns to the default graph", async ({ 
     )
     .not.toContain("초기화 대상");
 });
+
+test("weak-node review moves a strengthened concept out of the review queue", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  await page.waitForFunction(() => localStorage.getItem("feynman-learning-os:concept-graph"));
+
+  const reviewQueue = page.getByLabel("약한 노드 리뷰");
+  await expect(reviewQueue.getByRole("heading", { name: "약한 노드 3개" })).toBeVisible();
+
+  await page.getByRole("button", { name: "다음 약점" }).click();
+  await expect(page.getByLabel("제목")).toHaveValue("내 말로 설명하기");
+
+  await page.getByLabel("내 설명").fill("새 개념을 책 없이 내 언어로 다시 설명한다.");
+  await page.getByLabel("명확성").fill("0.9");
+  await page.getByLabel("정확성").fill("0.9");
+  await page.getByLabel("단순성").fill("0.9");
+  await page.getByLabel("자신감").fill("0.9");
+
+  await expect(page.getByLabel("이해도 점수").getByText("안정")).toBeVisible();
+
+  await page.getByRole("button", { name: "복습 완료로 표시" }).click();
+  await expect(page.getByRole("button", { name: "복습 완료로 표시" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: /내 말로 설명하기/ })).toContainText(
+    "복습 완료",
+  );
+  await expect(reviewQueue.getByRole("heading", { name: "약한 노드 2개" })).toBeVisible();
+
+  await page.getByRole("button", { name: "다음 약점" }).click();
+  await expect(page.getByLabel("제목")).toHaveValue("파인만 러닝 OS");
+
+  await page.getByRole("button", { name: "다음 약점" }).click();
+  await expect(page.getByLabel("제목")).toHaveValue("약한 지점 복습하기");
+
+  await page.getByRole("button", { name: "약한 노드만" }).click();
+  await expect(page.getByRole("button", { name: /내 말로 설명하기/ })).toHaveCount(0);
+});
