@@ -18,7 +18,9 @@ Implemented:
 - explanation quality score editing
 - weak-node visual states
 - weak-node review flow
+- Korean UI copy
 - GitHub Actions CI
+- GitHub issue and pull request templates
 - Figma-inspired black-and-white plus pastel design direction
 - default AI task protocol in `AGENTS.md`
 - issue-style task feedback in final responses
@@ -42,7 +44,7 @@ pnpm build
 
 ## Current Next Safe Task
 
-Add GitHub issue and pull request templates.
+Decide whether to merge the review-flow branch, then start Playwright planning in a fresh context.
 
 ## Current Workflow
 

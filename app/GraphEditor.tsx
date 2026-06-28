@@ -26,7 +26,7 @@ const initialGraph: ConceptGraph = {
   nodes: {
     root: {
       id: "root",
-      title: "Feynman Learning OS",
+      title: "파인만 러닝 OS",
       children: ["explain", "review"],
       learningState: "read",
       score: {
@@ -211,49 +211,49 @@ export function GraphEditor() {
   return (
     <main className="page">
       <section className="hero">
-        <p className="eyebrow">Sprint 2</p>
-        <h1>Feynman Learning OS</h1>
+        <p className="eyebrow">스프린트 2</p>
+        <h1>파인만 러닝 OS</h1>
         <p className="summary">
-          ConceptGraph를 직접 수정하며 Feynman 학습 루프의 기본 구조를 다듬는
+          개념 그래프를 직접 수정하며 파인만 학습 루프의 기본 구조를 다듬는
           로컬 편집기입니다.
         </p>
       </section>
 
       <section className="statusGrid" aria-label="도메인 상태">
-        <Status label="Graph validation" value={validation.valid ? "valid" : "invalid"} />
-        <Status label="Weak nodes" value={`${weakNodeCount}`} />
-        <Status label="Share URL" value={shareStatus} />
+        <Status label="그래프 검증" value={validation.valid ? "정상" : "오류"} />
+        <Status label="약한 노드" value={`${weakNodeCount}개`} />
+        <Status label="공유 링크" value={shareStatusLabel(shareStatus)} />
       </section>
 
       <section className="toolbar" aria-label="편집 도구">
         <button disabled={history.undoStack.length === 0} onClick={undoLast} type="button">
-          Undo
+          되돌리기
         </button>
         <button disabled={history.redoStack.length === 0} onClick={redoLast} type="button">
-          Redo
+          다시 실행
         </button>
         <button onClick={resetGraph} type="button">
-          Reset
+          초기화
         </button>
         <button onClick={() => void shareGraph()} type="button">
-          Share URL
+          링크 복사
         </button>
         <button
           className={showWeakOnly ? "activeButton" : ""}
           onClick={() => setShowWeakOnly((value) => !value)}
           type="button"
         >
-          Weak only
+          약한 노드만
         </button>
         <button disabled={weakNodeCount === 0} onClick={selectNextWeakNode} type="button">
-          Next weak
+          다음 약점
         </button>
       </section>
 
       <section className="reviewStrip" aria-label="약한 노드 리뷰">
         <div>
-          <p className="eyebrow">Review queue</p>
-          <h2>{weakNodeCount === 0 ? "No weak nodes" : `${weakNodeCount} weak nodes`}</h2>
+          <p className="eyebrow">복습 대기열</p>
+          <h2>{weakNodeCount === 0 ? "약한 노드 없음" : `약한 노드 ${weakNodeCount}개`}</h2>
         </div>
         <p>
           Weak node는 설명이 비어 있거나 이해도 평균이 낮은 개념입니다. 복습 후에도 점수가
@@ -261,9 +261,9 @@ export function GraphEditor() {
         </p>
       </section>
 
-      <section className="editorShell" aria-label="ConceptGraph 편집기">
+      <section className="editorShell" aria-label="개념 그래프 편집기">
         <aside className="nodeTree">
-          <h2>ConceptGraph</h2>
+          <h2>개념 그래프</h2>
           <div className="nodeList">
             {visibleNodes.map(({ node, depth }) => (
               <button
@@ -282,7 +282,7 @@ export function GraphEditor() {
                 <span>
                   <strong>{node.title}</strong>
                   <small>
-                    {node.learningState} · {scoreLabel(node)}
+                    {learningStateLabel(node.learningState)} · {scoreLabel(node)}
                   </small>
                 </span>
                 <em>{node.children.length}</em>
@@ -293,12 +293,12 @@ export function GraphEditor() {
 
         <section className="inspector" aria-label="선택된 node 편집">
           <div>
-            <p className="eyebrow">Selected node</p>
+            <p className="eyebrow">선택한 노드</p>
             <h2>{selectedNode.title}</h2>
           </div>
 
           <label>
-            Title
+            제목
             <input
               onChange={(event) => updateSelected({ title: event.target.value })}
               value={selectedNode.title}
@@ -306,7 +306,7 @@ export function GraphEditor() {
           </label>
 
           <label>
-            Learning state
+            학습 상태
             <select
               onChange={(event) =>
                 updateSelected({ learningState: event.target.value as LearningState })
@@ -315,14 +315,14 @@ export function GraphEditor() {
             >
               {learningStates.map((state) => (
                 <option key={state} value={state}>
-                  {state}
+                  {learningStateLabel(state)}
                 </option>
               ))}
             </select>
           </label>
 
           <label>
-            Explanation
+            내 설명
             <textarea
               onChange={(event) => updateSelected({ explanation: event.target.value })}
               rows={6}
@@ -333,31 +333,31 @@ export function GraphEditor() {
           <section className="scorePanel" aria-label="이해도 점수">
             <div className="scoreHeader">
               <div>
-                <p className="eyebrow">Understanding score</p>
-                <h3>{selectedAverage === undefined ? "Not scored" : formatScore(selectedAverage)}</h3>
+                <p className="eyebrow">이해도 점수</p>
+                <h3>{selectedAverage === undefined ? "점수 없음" : formatScore(selectedAverage)}</h3>
               </div>
               <strong className={isWeakNode(selectedNode) ? "weakBadge" : "strongBadge"}>
-                {isWeakNode(selectedNode) ? "weak" : "steady"}
+                {isWeakNode(selectedNode) ? "약함" : "안정"}
               </strong>
             </div>
 
             <ScoreSlider
-              label="Clarity"
+              label="명확성"
               onChange={(value) => updateSelectedScore("clarity", value)}
               value={selectedNode.score?.clarity ?? 0}
             />
             <ScoreSlider
-              label="Correctness"
+              label="정확성"
               onChange={(value) => updateSelectedScore("correctness", value)}
               value={selectedNode.score?.correctness ?? 0}
             />
             <ScoreSlider
-              label="Simplicity"
+              label="단순성"
               onChange={(value) => updateSelectedScore("simplicity", value)}
               value={selectedNode.score?.simplicity ?? 0}
             />
             <ScoreSlider
-              label="Confidence"
+              label="자신감"
               onChange={(value) => updateSelectedScore("confidence", value)}
               value={selectedNode.score?.confidence ?? 0}
             />
@@ -371,11 +371,11 @@ export function GraphEditor() {
                   addChild();
                 }
               }}
-              placeholder="새 child node"
+              placeholder="새 하위 노드"
               value={childTitle}
             />
             <button onClick={addChild} type="button">
-              Add child
+              하위 노드 추가
             </button>
           </div>
 
@@ -385,7 +385,7 @@ export function GraphEditor() {
             onClick={markSelectedReviewed}
             type="button"
           >
-            Mark reviewed
+            복습 완료로 표시
           </button>
 
           <button
@@ -394,7 +394,7 @@ export function GraphEditor() {
             onClick={deleteSelected}
             type="button"
           >
-            Delete node
+            노드 삭제
           </button>
         </section>
       </section>
@@ -480,7 +480,7 @@ function findParentId(graph: ConceptGraph, nodeId: string): string | undefined {
 
 function scoreLabel(node: ConceptNode): string {
   const average = calculateScoreAverage(node.score);
-  return average === undefined ? "not scored" : formatScore(average);
+  return average === undefined ? "점수 없음" : formatScore(average);
 }
 
 function formatScore(value: number): string {
@@ -505,4 +505,29 @@ function loadStoredGraph(): ConceptGraph | undefined {
 function loadGraphFromUrl(): ConceptGraph | undefined {
   const result = decodeGraphFromHash(window.location.hash);
   return result.ok ? result.graph : undefined;
+}
+
+function shareStatusLabel(status: string): string {
+  const labels: Record<string, string> = {
+    copied: "복사됨",
+    idle: "대기",
+    reset: "초기화됨",
+    "url ready": "링크 준비됨",
+  };
+
+  return labels[status] ?? status;
+}
+
+function learningStateLabel(state: LearningState): string {
+  const labels: Record<LearningState, string> = {
+    unknown: "모름",
+    read: "읽음",
+    explained: "설명함",
+    verified: "검증됨",
+    review_due: "복습 필요",
+    reviewed: "복습 완료",
+    mastered: "숙달",
+  };
+
+  return labels[state];
 }
