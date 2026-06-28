@@ -12,7 +12,9 @@ Implemented:
 - graph validation
 - TreePatch
 - command/history with undo/redo
+- nested learning tree JSON import/export adapters
 - local Graph Editor
+- Graph Editor nested JSON import/export UI
 - localStorage persistence
 - URL graph sharing
 - explanation quality score editing
@@ -21,6 +23,7 @@ Implemented:
 - Korean UI copy
 - GitHub Actions CI
 - GitHub issue and pull request templates
+- PR template scope, architecture, follow-up, and e2e checklist
 - local slash command definitions in `.codex/commands`
 - Figma-inspired black-and-white plus pastel design direction
 - default AI task protocol in `AGENTS.md`
@@ -28,6 +31,8 @@ Implemented:
 - branch-first workflow for future implementation work
 - GitHub Issue creation fallback rules for unauthenticated environments
 - CI package manager version rule using `package.json#packageManager`
+- e2e verification in CI for UI flows
+- JSON file drag-and-drop import captured as follow-up issue #4
 
 ## Current Architecture Rule
 
@@ -43,11 +48,27 @@ Expected commands:
 pnpm typecheck
 pnpm test
 pnpm build
+pnpm test:e2e
 ```
 
 ## Current Next Safe Task
 
-Start Playwright E2E setup from `docs/testing/PLAYWRIGHT_PLAN.md` on a task branch.
+Split `GraphEditor.tsx` into named UI components before adding more editor UI.
+
+Recommended component boundary:
+
+- `GraphToolbar`
+- `TreeJsonPanel`
+- `ReviewStrip`
+- `NodeTree`
+- `NodeInspector`
+
+Keep top-level graph/history orchestration in `GraphEditor` until Pixi.js or another independent editing surface makes a store worthwhile.
+
+## Follow-up Issues
+
+- #4 JSON file drag-and-drop import support
+- #6 GraphEditor component split
 
 ## Current Workflow
 
@@ -55,7 +76,7 @@ Future implementation work should use task branches and PR-ready summaries.
 
 Level 1-2 tasks may be implemented, validated, committed, and pushed automatically to the task branch.
 
-Do not merge task branches into `main` automatically.
+Do not merge task branches into `main` automatically unless explicitly requested.
 
 ## Do Not Start Yet
 

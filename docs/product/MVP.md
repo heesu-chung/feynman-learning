@@ -44,12 +44,21 @@ The app stores and edits this as a normalized `ConceptGraph` internally.
 
 ## P0
 
-- ChatGPT JSON import schema
-- JSON to `ConceptGraph` adapter
-- `ConceptGraph` to JSON export adapter
-- URL string encode/decode
-- Pixi.js tree render
-- Canvas node select/edit/add/delete/move
+- [x] ChatGPT JSON import schema
+- [x] JSON to `ConceptGraph` adapter
+- [x] `ConceptGraph` to JSON export adapter
+- [x] URL string encode/decode
+- [x] temporary React tree editor
+- [x] paste-based JSON import/export UI
+- [ ] split `GraphEditor.tsx` into stable editor components
+- [ ] Pixi.js tree render
+- [ ] Canvas node select/edit/add/delete/move
+
+## P0 Follow-up
+
+- JSON file drag-and-drop import is tracked separately in issue #4.
+- `GraphEditor.tsx` split is tracked separately in issue #6 and should happen before adding more editor UI.
+- Store adoption should wait until Pixi.js or another independent surface needs shared editor state.
 
 ## P1
 
@@ -62,4 +71,3 @@ The app stores and edits this as a normalized `ConceptGraph` internally.
 - Figma export or deeper Figma-style editing
 - Weak-node learning signals
 - Study sessions and review scheduling
-
