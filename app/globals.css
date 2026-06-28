@@ -174,6 +174,33 @@ button:disabled {
   padding: 0 16px;
 }
 
+.activeButton {
+  background: var(--block-lilac);
+  color: var(--ink);
+}
+
+.reviewStrip {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.55fr) minmax(320px, 1fr);
+  gap: 24px;
+  align-items: end;
+  margin-bottom: 24px;
+  padding: 32px;
+  border: 1px solid var(--ink);
+  border-radius: 24px;
+  background: var(--block-lime);
+}
+
+.reviewStrip h2,
+.reviewStrip p {
+  margin-bottom: 0;
+}
+
+.reviewStrip p {
+  font-size: 18px;
+  line-height: 1.45;
+}
+
 .editorShell {
   display: grid;
   grid-template-columns: minmax(240px, 0.8fr) minmax(320px, 1.2fr);
@@ -359,8 +386,14 @@ input[type="range"] {
 }
 
 .addChild button,
-.dangerButton {
+.dangerButton,
+.reviewButton {
   padding: 0 16px;
+}
+
+.reviewButton {
+  background: var(--block-navy);
+  color: var(--inverse-ink);
 }
 
 .dangerButton {
@@ -388,6 +421,7 @@ input[type="range"] {
 
   .statusGrid,
   .editorShell,
+  .reviewStrip,
   .addChild {
     grid-template-columns: 1fr;
   }

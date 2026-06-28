@@ -20,6 +20,7 @@ Progress:
 - URL serialization: done
 - explanation quality fields: done
 - weak-node visual states: done
+- weak-node review flow: done
 - default task protocol: documented
 - compact project context: documented
 - design direction: documented
@@ -35,4 +36,4 @@ Progress:
 
 ## Next Safe Task
 
-Add a simple review flow for weak nodes.
+Add GitHub issue and pull request templates.

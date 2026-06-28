@@ -59,10 +59,13 @@ export function GraphEditor() {
   const [selectedId, setSelectedId] = useState(initialGraph.rootId);
   const [childTitle, setChildTitle] = useState("");
   const [shareStatus, setShareStatus] = useState("idle");
+  const [showWeakOnly, setShowWeakOnly] = useState(false);
   const validation = validateConceptGraph(history.graph);
   const selectedNode = history.graph.nodes[selectedId] ?? history.graph.nodes[history.graph.rootId];
   const nodes = useMemo(() => flattenGraph(history.graph), [history.graph]);
-  const weakNodeCount = nodes.filter(({ node }) => isWeakNode(node)).length;
+  const weakNodes = nodes.filter(({ node }) => isWeakNode(node));
+  const visibleNodes = showWeakOnly ? weakNodes : nodes;
+  const weakNodeCount = weakNodes.length;
   const selectedAverage = calculateScoreAverage(selectedNode.score);
 
   useEffect(() => {
@@ -169,6 +172,20 @@ export function GraphEditor() {
     }
   }
 
+  function selectNextWeakNode(): void {
+    if (weakNodes.length === 0) {
+      return;
+    }
+
+    const currentIndex = weakNodes.findIndex(({ node }) => node.id === selectedNode.id);
+    const nextIndex = currentIndex < 0 ? 0 : (currentIndex + 1) % weakNodes.length;
+    setSelectedId(weakNodes[nextIndex].node.id);
+  }
+
+  function markSelectedReviewed(): void {
+    updateSelected({ learningState: "reviewed" });
+  }
+
   function resetGraph(): void {
     localStorage.removeItem(storageKey);
     window.history.replaceState(null, "", window.location.pathname);
@@ -221,13 +238,34 @@ export function GraphEditor() {
         <button onClick={() => void shareGraph()} type="button">
           Share URL
         </button>
+        <button
+          className={showWeakOnly ? "activeButton" : ""}
+          onClick={() => setShowWeakOnly((value) => !value)}
+          type="button"
+        >
+          Weak only
+        </button>
+        <button disabled={weakNodeCount === 0} onClick={selectNextWeakNode} type="button">
+          Next weak
+        </button>
+      </section>
+
+      <section className="reviewStrip" aria-label="약한 노드 리뷰">
+        <div>
+          <p className="eyebrow">Review queue</p>
+          <h2>{weakNodeCount === 0 ? "No weak nodes" : `${weakNodeCount} weak nodes`}</h2>
+        </div>
+        <p>
+          Weak node는 설명이 비어 있거나 이해도 평균이 낮은 개념입니다. 복습 후에도 점수가
+          낮으면 계속 약한 노드로 남습니다.
+        </p>
       </section>
 
       <section className="editorShell" aria-label="ConceptGraph 편집기">
         <aside className="nodeTree">
           <h2>ConceptGraph</h2>
           <div className="nodeList">
-            {nodes.map(({ node, depth }) => (
+            {visibleNodes.map(({ node, depth }) => (
               <button
                 className={[
                   "node",
@@ -340,6 +378,15 @@ export function GraphEditor() {
               Add child
             </button>
           </div>
+
+          <button
+            className="reviewButton"
+            disabled={selectedNode.learningState === "reviewed"}
+            onClick={markSelectedReviewed}
+            type="button"
+          >
+            Mark reviewed
+          </button>
 
           <button
             className="dangerButton"

@@ -17,6 +17,7 @@ Implemented:
 - URL graph sharing
 - explanation quality score editing
 - weak-node visual states
+- weak-node review flow
 - GitHub Actions CI
 - Figma-inspired black-and-white plus pastel design direction
 - default AI task protocol in `AGENTS.md`
@@ -41,7 +42,7 @@ pnpm build
 
 ## Current Next Safe Task
 
-Add a simple review flow for weak nodes.
+Add GitHub issue and pull request templates.
 
 ## Current Workflow
 
