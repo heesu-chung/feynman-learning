@@ -2,6 +2,7 @@ import {
   applyTreePatch,
   type ApplyTreePatchResult,
   type TreePatch,
+  validateConceptGraph,
 } from "../conceptGraph/index.ts";
 import type { ConceptGraph, ConceptNode } from "../conceptGraph/types.ts";
 import type { CommandResult, DomainCommand } from "./types.ts";
@@ -27,7 +28,7 @@ export class TreePatchCommand implements DomainCommand {
 
 function toCommandResult(
   result: ApplyTreePatchResult,
-  inversePatch: TreePatch,
+  inversePatch: TreePatch | DomainCommand,
 ): CommandResult {
   if (!result.ok) {
     return { ok: false, error: result.error };
@@ -36,12 +37,12 @@ function toCommandResult(
   return {
     ok: true,
     graph: result.graph,
-    inverse: new TreePatchCommand(inversePatch),
+    inverse: isTreePatch(inversePatch) ? new TreePatchCommand(inversePatch) : inversePatch,
   };
 }
 
 type InversePatchResult =
-  | { ok: true; patch: TreePatch }
+  | { ok: true; patch: TreePatch | DomainCommand }
   | { ok: false; error: string };
 
 function createInversePatch(graph: ConceptGraph, patch: TreePatch): InversePatchResult {
@@ -95,12 +96,7 @@ function createDeleteInversePatch(graph: ConceptGraph, nodeId: string): InverseP
 
   return {
     ok: true,
-    patch: {
-      type: "ADD_NODE",
-      parentId: parent.node.id,
-      index: parent.index,
-      node: cloneNode(node),
-    },
+    patch: new RestoreDeletedSubtreeCommand(graph, nodeId, parent.node.id),
   };
 }
 
@@ -144,4 +140,76 @@ function cloneNode(node: ConceptNode): ConceptNode {
     ...node,
     children: [...node.children],
   };
+}
+
+function isTreePatch(command: TreePatch | DomainCommand): command is TreePatch {
+  return !("execute" in command);
+}
+
+class RestoreDeletedSubtreeCommand implements DomainCommand {
+  readonly type = "RESTORE_DELETED_SUBTREE";
+  private readonly beforeDeleteGraph: ConceptGraph;
+  private readonly nodeId: string;
+  private readonly parentId: string;
+
+  constructor(beforeDeleteGraph: ConceptGraph, nodeId: string, parentId: string) {
+    this.beforeDeleteGraph = cloneGraph(beforeDeleteGraph);
+    this.nodeId = nodeId;
+    this.parentId = parentId;
+  }
+
+  execute(graph: ConceptGraph): CommandResult {
+    const restoredIds = collectDescendantIds(this.beforeDeleteGraph, this.nodeId);
+    const restoredNodes = Object.fromEntries(
+      [...restoredIds].map((id) => [id, cloneNode(this.beforeDeleteGraph.nodes[id])]),
+    );
+
+    const restoredGraph: ConceptGraph = {
+      ...graph,
+      nodes: {
+        ...graph.nodes,
+        ...restoredNodes,
+        [this.parentId]: cloneNode(this.beforeDeleteGraph.nodes[this.parentId]),
+      },
+    };
+
+    const validation = validateConceptGraph(restoredGraph);
+    if (!validation.valid) {
+      return { ok: false, error: "INVALID_RESTORE_RESULT" };
+    }
+
+    return {
+      ok: true,
+      graph: restoredGraph,
+      inverse: new TreePatchCommand({ type: "DELETE_NODE", nodeId: this.nodeId }),
+    };
+  }
+}
+
+function cloneGraph(graph: ConceptGraph): ConceptGraph {
+  return {
+    ...graph,
+    nodes: Object.fromEntries(
+      Object.entries(graph.nodes).map(([id, node]) => [id, cloneNode(node)]),
+    ),
+  };
+}
+
+function collectDescendantIds(graph: ConceptGraph, nodeId: string): Set<string> {
+  const ids = new Set<string>();
+
+  function collect(id: string): void {
+    if (ids.has(id)) {
+      return;
+    }
+
+    ids.add(id);
+
+    for (const childId of graph.nodes[id]?.children ?? []) {
+      collect(childId);
+    }
+  }
+
+  collect(nodeId);
+  return ids;
 }

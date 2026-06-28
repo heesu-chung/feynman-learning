@@ -14,10 +14,11 @@ Feynman 학습법을 기반으로 어려운 개념을 직접 설명하고, 약�
 
 ## 현재 진행 상황
 
-현재 Sprint 1은 `ConceptGraph`와 `LearningState` 도메인 기반을 만드는 단계입니다.
+현재는 도메인 기반 위에 로컬 ConceptGraph 편집기를 얹는 단계입니다.
 
 구현 완료:
 - Next.js 최소 앱
+- 로컬 ConceptGraph 편집기
 - `ConceptGraph` 타입
 - `LearningState` 타입
 - 그래프 검증 로직

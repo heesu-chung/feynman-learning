@@ -91,14 +91,50 @@ h3 {
   font-size: 24px;
 }
 
-.workspace {
+.toolbar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  min-height: 40px;
+  border: 1px solid #b9b3a6;
+  border-radius: 8px;
+  background: #fffdf8;
+  color: #1f2933;
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+  border-color: #6b6f59;
+}
+
+button:disabled {
+  color: #9ba1a6;
+  cursor: not-allowed;
+}
+
+.toolbar button {
+  min-width: 96px;
+  padding: 0 16px;
+}
+
+.editorShell {
   display: grid;
   grid-template-columns: minmax(240px, 0.8fr) minmax(320px, 1.2fr);
   gap: 32px;
   align-items: start;
 }
 
-.workspace p {
+.editorShell p {
   color: #5f6b76;
   line-height: 1.7;
 }
@@ -106,6 +142,11 @@ h3 {
 .nodeList {
   display: grid;
   gap: 12px;
+}
+
+.nodeTree,
+.inspector {
+  min-width: 0;
 }
 
 .node {
@@ -116,12 +157,30 @@ h3 {
   padding: 18px;
 }
 
+.nodeList button.node {
+  width: 100%;
+  min-height: 76px;
+  padding-left: calc(18px + var(--depth, 0) * 20px);
+  text-align: left;
+}
+
+.node.selected {
+  border-color: #6b6f59;
+  background: #eef4e8;
+}
+
+.node small {
+  display: block;
+  margin-top: 6px;
+  color: #6b6f59;
+}
+
 .node p {
   margin-bottom: 0;
   color: #6b6f59;
 }
 
-.node span {
+.node em {
   display: grid;
   width: 36px;
   height: 36px;
@@ -130,6 +189,67 @@ h3 {
   background: #dce8d5;
   color: #26351f;
   font-weight: 700;
+  font-style: normal;
+  flex: 0 0 auto;
+}
+
+.inspector {
+  display: grid;
+  gap: 16px;
+  padding: 22px;
+  border: 1px solid #d8d4c8;
+  border-radius: 8px;
+  background: #fffdf8;
+}
+
+label {
+  display: grid;
+  gap: 8px;
+  color: #4a5563;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  border: 1px solid #c8c1b4;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1f2933;
+}
+
+input,
+select {
+  height: 44px;
+  padding: 0 12px;
+}
+
+textarea {
+  min-height: 140px;
+  padding: 12px;
+  resize: vertical;
+}
+
+.addChild {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.addChild button,
+.dangerButton {
+  padding: 0 16px;
+}
+
+.dangerButton {
+  border-color: #d7aaa0;
+  color: #8a2f1f;
+}
+
+.dangerButton:hover:not(:disabled) {
+  border-color: #8a2f1f;
 }
 
 @media (max-width: 760px) {
@@ -138,7 +258,8 @@ h3 {
   }
 
   .statusGrid,
-  .workspace {
+  .editorShell,
+  .addChild {
     grid-template-columns: 1fr;
   }
 }

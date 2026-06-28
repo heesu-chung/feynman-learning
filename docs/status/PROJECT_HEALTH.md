@@ -15,6 +15,7 @@ Progress:
 - TreePatch: done
 - command/history: done
 - minimal Next.js app: done
+- local ConceptGraph editor: done
 - unit tests: done for current domain rules
 
 ## Integration Status
@@ -27,4 +28,4 @@ Progress:
 
 ## Next Safe Task
 
-Add local ConceptGraph editing UI without Pixi or external integrations.
+Add localStorage persistence for the local ConceptGraph editor.

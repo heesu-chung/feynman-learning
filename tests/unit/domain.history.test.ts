@@ -69,6 +69,38 @@ describe("domain history", () => {
     assert.equal(second.ok ? second.state.redoStack.length : -1, 0);
     assert.deepEqual(second.ok ? second.state.graph.nodes.root.children : [], ["second"]);
   });
+
+  it("restores a deleted subtree when undone", () => {
+    const initial = createHistoryState({
+      rootId: "root",
+      nodes: {
+        root: { ...node("root"), children: ["child"] },
+        child: { ...node("child"), children: ["grandchild"] },
+        grandchild: node("grandchild"),
+      },
+    });
+
+    const deleted = executeCommand(
+      initial,
+      new TreePatchCommand({
+        type: "DELETE_NODE",
+        nodeId: "child",
+      }),
+    );
+
+    assert.equal(deleted.ok, true);
+    assert.equal(deleted.ok ? deleted.state.graph.nodes.child : undefined, undefined);
+    assert.equal(deleted.ok ? deleted.state.graph.nodes.grandchild : undefined, undefined);
+
+    const restored = undo(deleted.ok ? deleted.state : initial);
+
+    assert.equal(restored.ok, true);
+    assert.deepEqual(restored.ok ? restored.state.graph.nodes.root.children : [], ["child"]);
+    assert.deepEqual(restored.ok ? restored.state.graph.nodes.child.children : [], [
+      "grandchild",
+    ]);
+    assert.equal(restored.ok ? restored.state.graph.nodes.grandchild.title : "", "grandchild");
+  });
 });
 
 function baseGraph(): ConceptGraph {
