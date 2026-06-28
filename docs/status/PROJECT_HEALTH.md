@@ -26,6 +26,8 @@ Progress:
 - default task protocol: documented
 - compact project context: documented
 - design direction: documented
+- weak-node review branch: merged to main
+- Playwright planning: started
 - unit tests: done for current domain rules
 
 ## Integration Status
@@ -38,4 +40,4 @@ Progress:
 
 ## Next Safe Task
 
-Decide whether to merge the review-flow branch, then start Playwright planning in a fresh context.
+Start Playwright E2E setup from `docs/testing/PLAYWRIGHT_PLAN.md`.

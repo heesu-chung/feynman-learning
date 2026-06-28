@@ -21,6 +21,9 @@ For:
 
 Only when UI exists.
 
+Planning:
+- detailed initial plan lives in `docs/testing/PLAYWRIGHT_PLAN.md`
+
 Flows:
 - create concept
 - add child

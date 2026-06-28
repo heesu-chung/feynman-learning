@@ -45,7 +45,7 @@ pnpm build
 
 ## Current Next Safe Task
 
-Decide whether to merge the review-flow branch, then start the next task from a fresh context.
+Start Playwright E2E setup from `docs/testing/PLAYWRIGHT_PLAN.md` on a task branch.
 
 ## Current Workflow
 
