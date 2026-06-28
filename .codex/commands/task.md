@@ -27,3 +27,22 @@ Use this command when the user wants Codex to implement one project task.
 10. Commit and push Level 1-2 work to the task branch.
 11. Do not merge to `main`.
 12. Return prompt feedback and context impact.
+
+## GitHub Issue Requests
+
+If the task asks to create or update a GitHub Issue:
+
+1. Check for an authenticated GitHub path:
+   - `gh` CLI
+   - `GITHUB_TOKEN` or `GH_TOKEN`
+   - configured GitHub connector/tool
+2. If no authenticated path is available, clearly state that the remote issue was not created.
+3. Return a ready-to-paste issue draft with:
+   - title
+   - problem
+   - impact
+   - root cause or current understanding
+   - proposed fix
+   - acceptance criteria
+   - notes or links
+4. Continue local branch, docs, or code work if the task asks for it.

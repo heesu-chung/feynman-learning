@@ -220,6 +220,22 @@ For Level 3-4 tasks, ask before commit/push.
 
 Never merge a task branch into `main` without explicit approval.
 
+## GitHub Issue Creation Rule
+
+When asked to create or update a GitHub Issue, first check whether issue creation is available through one of:
+
+- authenticated `gh` CLI
+- `GITHUB_TOKEN` or `GH_TOKEN`
+- configured GitHub connector/tool
+
+If no authenticated GitHub path is available, do not claim that the issue was created.
+
+Instead:
+1. explain the exact blocker, such as missing `gh` CLI or missing token
+2. provide a ready-to-paste issue title and body
+3. include problem, impact, current understanding, proposed fix, acceptance criteria, and notes
+4. continue local branch, docs, or code work if requested
+
 ## Documentation Rule
 
 Update only affected documentation.
