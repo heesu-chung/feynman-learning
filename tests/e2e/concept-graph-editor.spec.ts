@@ -71,6 +71,51 @@ test("shared URL hash restores the edited concept graph", async ({ page }) => {
   );
 });
 
+test("imports and exports nested learning tree JSON", async ({ page }) => {
+  await page.goto("/");
+
+  const treeJson = {
+    title: "HTTP 캐싱",
+    body: "응답을 재사용해 네트워크 비용을 줄인다.",
+    children: [
+      {
+        title: "Cache-Control",
+        body: "캐시 정책을 선언하는 헤더다.",
+      },
+    ],
+  };
+
+  await page
+    .getByRole("textbox", { name: "JSON 가져오기" })
+    .fill(JSON.stringify(treeJson, null, 2));
+  await page.getByRole("button", { name: "JSON 가져오기" }).click();
+
+  await expect(page.getByText("가져오기 완료")).toBeVisible();
+  await expect(page.getByLabel("제목")).toHaveValue("HTTP 캐싱");
+  await expect(page.getByLabel("내 설명")).toHaveValue(
+    "응답을 재사용해 네트워크 비용을 줄인다.",
+  );
+  await expect(page.getByRole("button", { name: /Cache-Control/ })).toBeVisible();
+
+  const exportedTree = JSON.parse(
+    await page.getByRole("textbox", { name: "JSON 내보내기" }).inputValue(),
+  ) as {
+    children: Array<{ body?: string; title: string }>;
+    title: string;
+  };
+
+  expect(exportedTree.title).toBe("HTTP 캐싱");
+  expect(exportedTree.children[0]).toMatchObject({
+    body: "캐시 정책을 선언하는 헤더다.",
+    title: "Cache-Control",
+  });
+
+  await page.reload();
+
+  await expect(page.getByRole("button", { name: /HTTP 캐싱/ })).toBeVisible();
+  await expect(page.getByLabel("제목")).toHaveValue("HTTP 캐싱");
+});
+
 test("reset clears shared URL state and returns to the default graph", async ({ page }) => {
   await page.goto("/");
 
