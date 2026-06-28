@@ -27,6 +27,7 @@ Implemented:
 - issue-style task feedback in final responses
 - branch-first workflow for future implementation work
 - GitHub Issue creation fallback rules for unauthenticated environments
+- CI package manager version rule using `package.json#packageManager`
 
 ## Current Architecture Rule
 

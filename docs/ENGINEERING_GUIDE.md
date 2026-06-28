@@ -43,6 +43,12 @@ Start with unit tests.
 
 Only add Playwright when UI flows exist.
 
+## CI Tooling Rule
+
+Use `package.json#packageManager` as the single source of truth for pnpm.
+
+CI should enable Corepack and let pnpm resolve from that field. Do not duplicate the pnpm version in GitHub Actions workflow configuration.
+
 ## Notion Learning Goal
 
 Notion is an export/archive target.
