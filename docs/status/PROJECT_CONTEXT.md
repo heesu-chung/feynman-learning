@@ -21,6 +21,7 @@ Implemented:
 - Korean UI copy
 - GitHub Actions CI
 - GitHub issue and pull request templates
+- local slash command definitions in `.codex/commands`
 - Figma-inspired black-and-white plus pastel design direction
 - default AI task protocol in `AGENTS.md`
 - issue-style task feedback in final responses
@@ -44,7 +45,7 @@ pnpm build
 
 ## Current Next Safe Task
 
-Decide whether to merge the review-flow branch, then start Playwright planning in a fresh context.
+Decide whether to merge the review-flow branch, then start the next task from a fresh context.
 
 ## Current Workflow
 

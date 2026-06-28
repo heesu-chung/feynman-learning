@@ -54,6 +54,21 @@ Validation results must be summarized as a table.
 
 Do not paste long test logs into the final answer unless the user explicitly asks for raw output.
 
+## Slash Command Rule
+
+Project slash command definitions live in `.codex/commands/`.
+
+Available project commands:
+
+- `/task`: execute one issue-style task using the default task protocol.
+- `/validate`: run project validation and return a table.
+- `/context`: update compact project context and return a handoff summary.
+- `/new-chat`: generate a compact prompt for a fresh chat.
+
+When the user writes a slash command, follow the matching command file first, then apply the rest of `AGENTS.md`.
+
+If the runtime does not natively execute repo-defined slash commands, treat the command file as the instruction source.
+
 ## Prompt Feedback Rule
 
 After each task, include a short assessment of the user's request:
