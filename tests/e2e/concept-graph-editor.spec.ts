@@ -41,3 +41,32 @@ test("local learning loop persists a weak child concept", async ({ page }) => {
   );
   await expect(scorePanel.getByText("약함")).toBeVisible();
 });
+
+test("shared URL hash restores the edited concept graph", async ({ page }) => {
+  await page.goto("/");
+
+  await page.waitForFunction(() => localStorage.getItem("feynman-learning-os:concept-graph"));
+
+  await page.getByPlaceholder("새 하위 노드").fill("해시 공유 개념");
+  await page.getByRole("button", { name: "하위 노드 추가" }).click();
+  await expect(page.getByLabel("제목")).toHaveValue("해시 공유 개념");
+
+  await page.getByLabel("내 설명").fill("URL 해시만으로 그래프를 다시 열 수 있어야 한다.");
+  await expect(page.getByLabel("내 설명")).toHaveValue(
+    "URL 해시만으로 그래프를 다시 열 수 있어야 한다.",
+  );
+
+  await page.getByRole("button", { name: "링크 복사" }).click();
+  await expect(page).toHaveURL(/#.+/);
+  const sharedHash = new URL(page.url()).hash;
+  expect(sharedHash.length).toBeGreaterThan(1);
+
+  await page.evaluate(() => localStorage.clear());
+  await page.goto(`/${sharedHash}`);
+
+  await expect(page.getByRole("button", { name: /해시 공유 개념/ })).toBeVisible();
+  await page.getByRole("button", { name: /해시 공유 개념/ }).click();
+  await expect(page.getByLabel("내 설명")).toHaveValue(
+    "URL 해시만으로 그래프를 다시 열 수 있어야 한다.",
+  );
+});
